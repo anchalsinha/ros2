@@ -1,0 +1,51 @@
+name: Build ROS
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      
+      - name: "Setup ROS"
+        uses: ros-tooling/setup-ros@0.1.4
+        with:
+          required-ros-distributions: foxy
+      
+      - name: Cache cc_internals
+        uses: actions/cache@v2
+        with:
+          path: ./cc_internals
+          key: ${{ runner.os }}-cc-internals
+      
+      - name: "Install cross compile dependencies"
+        run: |
+          sudo apt-get install -y qemu-user-static
+          pip3 install ros_cross_compile
+          pip3 install rosinstall_generator
+      
+      - name: "Install ROS Core"
+        run: |
+          rosinstall_generator ros_base --rosdistro foxy --deps > ros_base.repos
+          mkdir -p ros2_ws/src
+          vcs import ros2_ws/src < ros_base.repos
+
+      - name: "Cross compile"
+        run: |
+          ros_cross_compile ./ros2_ws --arch armhf --os debian --rosdistro foxy --skip-rosdep-keys console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers
+
+      - name: "Bundle"
+        run: |
+          tar -czvf ros2_armhf.tar.gz ros2_ws/install_armhf/ 
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: ros2_armhf
+          path: ./ros2_armhf.tar.gz
