@@ -43,7 +43,8 @@ jobs:
 
       - name: "Bundle"
         run: |
-          tar -czvf ros2_armhf.tar.gz ros2_ws/install_armhf/ 
+          cd ros2_ws
+          tar -czvf ros2_armhf.tar.gz install_armhf/ src/
 
       - name: "Upload artifact"
         uses: actions/upload-artifact@v2
