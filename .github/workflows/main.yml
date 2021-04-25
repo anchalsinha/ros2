@@ -34,20 +34,21 @@ jobs:
       - name: "Install ROS Core"
         run: |
           rosinstall_generator ros_base --rosdistro foxy --deps > ros_base.repos
-          mkdir -p ros2_ws/src
-          vcs import ros2_ws/src < ros_base.repos
+          mkdir -p ros2/src
+          vcs import ros2/src < ros_base.repos
 
       - name: "Cross compile"
+        timeout-minutes: 900
         run: |
-          ros_cross_compile ./ros2_ws --arch armhf --os debian --rosdistro foxy --skip-rosdep-keys console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers
+          ros_cross_compile ./ros2 --arch armhf --os debian --rosdistro foxy --custom-post-build-script ./bundle.sh --skip-rosdep-keys console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers
 
       - name: "Bundle"
         run: |
-          cd ros2_ws
-          tar -czvf ros2_armhf.tar.gz install_armhf/ src/
+          cd ros2
+          tar -cJvf ros2.tar.xz install_armhf/ bundle_armhf/ src/
 
       - name: "Upload artifact"
         uses: actions/upload-artifact@v2
         with:
           name: ros2_armhf
-          path: ./ros2_armhf.tar.gz
+          path: ros2/ros2.tar.xz
