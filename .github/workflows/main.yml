@@ -40,12 +40,12 @@ jobs:
       - name: "Cross compile"
         timeout-minutes: 900
         run: |
-          ros_cross_compile ./ros2 --arch armhf --os debian --rosdistro foxy --custom-post-build-script ./bundle.sh --skip-rosdep-keys console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers
+          ros_cross_compile ./ros2 --arch armhf --os debian --rosdistro foxy --skip-rosdep-keys console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers
 
       - name: "Bundle"
         run: |
           cd ros2
-          tar -cJvf ros2.tar.xz install_armhf/ bundle_armhf/ src/
+          tar -cJvf ros2.tar.xz install_armhf/ src/
 
       - name: "Upload artifact"
         uses: actions/upload-artifact@v2
